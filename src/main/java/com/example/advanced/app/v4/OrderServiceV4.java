@@ -1,30 +1,27 @@
-package com.example.advanced.app.v3;
+package com.example.advanced.app.v4;
 
-import com.example.advanced.trace.TraceId;
 import com.example.advanced.trace.TraceStatus;
-import com.example.advanced.trace.hellotrace.HelloTraceV2;
 import com.example.advanced.trace.logtrace.LogTrace;
+import com.example.advanced.trace.template.AbstractTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class OrderServiceV3 {
-    private final OrderRepositoryV3 orderRepository;
+public class OrderServiceV4 {
+    private final OrderRepositoryV4 orderRepository;
     private final LogTrace trace;
 
-    public void orderItem(String itemId) {
-
-        TraceStatus status = null;
-
-        try {
-            status = trace.begin("OrderService.orderItem()");
-            orderRepository.save(itemId);
-            trace.end(status);
-        } catch (Exception e) {
-            trace.exception(status, e);
-            throw e;
-        }
-
+    public String orderItem(String itemId) {
+        AbstractTemplate<String> template = new AbstractTemplate<>(trace) {
+            @Override
+            protected String call() {
+                orderRepository.save(itemId);
+                return "ok";
+            }
+        };
+        return template.execute("OrderService.orderItem()");
     }
+
+
 }
